@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alpaca Demo file</title>
+</head>
+<body>
+    <h1>Alpaca Demo</h1>
+    <button id="startOsc">Start Oscillator</button>
+    <button id="stopOsc">Stop Oscillator</button>
+    <input type="range" id="volume" min="0" max="2" step="0.01" value="1">
+
+    <script type="module">
+        import { AudioContextManager, Oscillator, Gain, EffectChain } from '../index.ts';
+
+        const context = AudioContextManager.getContext();
+
+        // Create oscillator
+        const osc = new Oscillator('saw', 440);
+
+        // Create gain
+        const gain = new Gain(1);
+
+        // Create effect chain and add gain
+        const chain = new EffectChain();
+        chain.add(gain);
+
+        // Connect oscillator → effect chain → speakers
+        osc.connect(chain.getOutput());
+        chain.connect(context.destination);
+
+        // UI controls
+        const startBtn = document.getElementById('startOsc');
+        const stopBtn = document.getElementById('stopOsc');
+        const volumeSlider = document.getElementById('volume');
+
+        startBtn.addEventListener('click', async () => {
+            await AudioContextManager.resumeContext(); // Unlock context on user gesture
+            osc.play();
+        });
+
+        stopBtn.addEventListener('click', () => {
+            osc.stop();
+        });
+
+        volumeSlider.addEventListener('input', () => {
+            gain.set(parseFloat(volumeSlider.value));
+        });
+    </script>
+</body>
+</html>
